@@ -1,0 +1,257 @@
+--[========================================================--
+--            SPEED CONTROL V1.3 - UNIVERSAL GUI           --
+--            Actualizado: Arrastre exclusivo en título      --
+--[========================================================--
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+-- Limpiar versiones anteriores si ya existe el GUI
+local playerGui = player:WaitForChild("PlayerGui")
+if playerGui:FindFirstChild("SpeedControlV13") then
+	playerGui.SpeedControlV13:Destroy()
+end
+
+-- Crear ScreenGui principal
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SpeedControlV13"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = playerGui
+
+-- Marco Principal (MainFrame)
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 260, 0, 160)
+mainFrame.Position = UDim2.new(0.5, -130, 0.4, -80)
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = false -- Desactivado para evitar conflictos con el slider
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 10)
+mainCorner.Parent = mainFrame
+
+-- Barra Superior / Título (Área para arrastrar)
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, -40, 0, 35)
+titleLabel.Position = UDim2.new(0, 12, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Text = "Speed Control V1.3"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 14
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = mainFrame
+
+-- Botón de Minimizar (-)
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Name = "MinimizeButton"
+minimizeBtn.Size = UDim2.new(0, 24, 0, 24)
+minimizeBtn.Position = UDim2.new(1, -30, 0, 6)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(55, 55, 65)
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.Text = "-"
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.TextSize = 16
+minimizeBtn.Parent = mainFrame
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(1, 0)
+minCorner.Parent = minimizeBtn
+
+-- Contenedor de Controles
+local contentContainer = Instance.new("Frame")
+contentContainer.Name = "ContentContainer"
+contentContainer.Size = UDim2.new(1, 0, 1, -35)
+contentContainer.Position = UDim2.new(0, 0, 0, 35)
+contentContainer.BackgroundTransparency = 1
+contentContainer.Parent = mainFrame
+
+-- Etiqueta de Velocidad Actual
+local speedInfoLabel = Instance.new("TextLabel")
+speedInfoLabel.Name = "SpeedInfoLabel"
+speedInfoLabel.Size = UDim2.new(1, -24, 0, 25)
+speedInfoLabel.Position = UDim2.new(0, 12, 0, 5)
+speedInfoLabel.BackgroundTransparency = 1
+speedInfoLabel.Font = Enum.Font.GothamMedium
+speedInfoLabel.Text = "Velocidad: 16"
+speedInfoLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+speedInfoLabel.TextSize = 13
+speedInfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+speedInfoLabel.Parent = contentContainer
+
+-- Fondo del Slider
+local sliderBG = Instance.new("Frame")
+sliderBG.Name = "SliderBackground"
+sliderBG.Size = UDim2.new(1, -24, 0, 8)
+sliderBG.Position = UDim2.new(0, 12, 0, 38)
+sliderBG.BackgroundColor3 = Color3.fromRGB(55, 55, 65)
+sliderBG.BorderSizePixel = 0
+sliderBG.Parent = contentContainer
+
+local sliderBGCorner = Instance.new("UICorner")
+sliderBGCorner.CornerRadius = UDim.new(1, 0)
+sliderBGCorner.Parent = sliderBG
+
+-- Barra de Relleno del Slider
+local sliderFill = Instance.new("Frame")
+sliderFill.Name = "SliderFill"
+sliderFill.Size = UDim2.new(0, 0, 1, 0)
+sliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+sliderFill.BorderSizePixel = 0
+sliderFill.Parent = sliderBG
+
+local sliderFillCorner = Instance.new("UICorner")
+sliderFillCorner.CornerRadius = UDim.new(1, 0)
+sliderFillCorner.Parent = sliderFill
+
+-- Botón Deslizante (Knob)
+local sliderKnob = Instance.new("Frame")
+sliderKnob.Name = "SliderKnob"
+sliderKnob.Size = UDim2.new(0, 16, 0, 16)
+sliderKnob.Position = UDim2.new(0, -8, 0.5, -8)
+sliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+sliderKnob.BorderSizePixel = 0
+sliderKnob.Parent = sliderBG
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1, 0)
+knobCorner.Parent = sliderKnob
+
+-- Botón de Reset (Rojo)
+local resetBtn = Instance.new("TextButton")
+resetBtn.Name = "ResetButton"
+resetBtn.Size = UDim2.new(1, -24, 0, 34)
+resetBtn.Position = UDim2.new(0, 12, 0, 68)
+resetBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+resetBtn.Font = Enum.Font.GothamBold
+resetBtn.Text = "Reset"
+resetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+resetBtn.TextSize = 14
+resetBtn.Parent = contentContainer
+
+local resetCorner = Instance.new("UICorner")
+resetCorner.CornerRadius = UDim.new(0, 6)
+resetCorner.Parent = resetBtn
+
+--[========================================================--
+--                  LÓGICA DE MOVIMIENTO Y SLIDER          --
+--[========================================================--
+
+local MIN_SPEED = 16
+local MAX_SPEED = 500
+local currentSpeed = MIN_SPEED
+local isMinimized = false
+local isDraggingSlider = false
+local isDraggingWindow = false
+
+local dragStartWindow
+local startPosWindow
+
+local function getHumanoid()
+	local character = player.Character
+	if character then
+		return character:FindFirstChildOfClass("Humanoid")
+	end
+	return nil
+end
+
+local function applySpeed(speed)
+	currentSpeed = speed
+	speedInfoLabel.Text = "Velocidad: " .. math.floor(currentSpeed)
+	
+	local humanoid = getHumanoid()
+	if humanoid then
+		humanoid.WalkSpeed = currentSpeed
+	end
+end
+
+local function updateSlider(inputPositionX)
+	local absolutePosition = sliderBG.AbsolutePosition.X
+	local absoluteSize = sliderBG.AbsoluteSize.X
+	
+	if absoluteSize <= 0 then return end
+	
+	local posRelative = math.clamp((inputPositionX - absolutePosition) / absoluteSize, 0, 1)
+	local newSpeed = MIN_SPEED + (posRelative * (MAX_SPEED - MIN_SPEED))
+	
+	applySpeed(newSpeed)
+	sliderFill.Size = UDim2.new(posRelative, 0, 1, 0)
+	sliderKnob.Position = UDim2.new(posRelative, -8, 0.5, -8)
+end
+
+-- Lógica para arrastrar SOLO desde la barra de título
+titleLabel.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		isDraggingWindow = true
+		dragStartWindow = input.Position
+		startPosWindow = mainFrame.Position
+	end
+end)
+
+-- Lógica del Slider
+sliderBG.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		isDraggingSlider = true
+		updateSlider(input.Position.X)
+	end
+end)
+
+-- Control global de entradas (Mouse / Táctil)
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		isDraggingSlider = false
+		isDraggingWindow = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		if isDraggingSlider then
+			updateSlider(input.Position.X)
+		elseif isDraggingWindow then
+			local delta = input.Position - dragStartWindow
+			mainFrame.Position = UDim2.new(
+				startPosWindow.X.Scale, 
+				startPosWindow.X.Offset + delta.X, 
+				startPosWindow.Y.Scale, 
+				startPosWindow.Y.Offset + delta.Y
+			)
+		end
+	end
+end)
+
+-- Botón de Reset
+resetBtn.MouseButton1Click:Connect(function()
+	applySpeed(MIN_SPEED)
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderKnob.Position = UDim2.new(0, -8, 0.5, -8)
+end)
+
+-- Botón de Minimizar
+minimizeBtn.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+	
+	if isMinimized then
+		minimizeBtn.Text = "+"
+		contentContainer.Visible = false
+		mainFrame:TweenSize(UDim2.new(0, 260, 0, 35), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2, true)
+	else
+		minimizeBtn.Text = "-"
+		mainFrame:TweenSize(UDim2.new(0, 260, 0, 160), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2, true, function()
+			contentContainer.Visible = true
+		end)
+	end
+end)
+
+player.CharacterAdded:Connect(function(char)
+	local humanoid = char:WaitForChild("Humanoid")
+	humanoid.WalkSpeed = currentSpeed
+end)
